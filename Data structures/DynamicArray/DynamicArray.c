@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include <time.h>
 
 typedef struct DynamicArray
 {
@@ -206,26 +208,152 @@ void CopyArray(DynamicArray *DA1, DynamicArray *DA2, int start, int end)
     }
 }
 
-int main()
+int BinarySearch(DynamicArray *DA, int value, bool first)
 {
-    DynamicArray a1;
-    DynamicArray a2;
+    int start = 0;
+    int end = DA->end - 1;
+    int result = -1;
 
-    InitArray(&a1, 10);
-    InitArray(&a2, 20);
-    for (int i = 0; i < 20; i++)
+    while (start <= end)
     {
-        InsertArray(&a2, i, a2.end);
+        int mid = (start + end) / 2;
+        if (DA->A[mid] == value)
+        {
+            result = mid;
+            if (first)
+            {
+                end = mid - 1;
+            }
+            else
+            {
+                start = mid + 1;
+            }
+        }
+        else if (value < DA->A[mid])
+        {
+            end = mid - 1;
+        }
+        else
+        {
+            start = mid + 1;
+        }
     }
-    PrintArray(&a2, 0, a2.end);
-    PrintArray(&a1, 0, a1.end);
+    return result;
+}
 
-    CopyArray(&a1, &a2, 15, 20);
-    PrintArray(&a1, 0, a1.end);
+int Count(DynamicArray *DA, int n, int value)
+{
+    int firstIndex = BinarySearch(DA, value, true);
+    int lastIndex = BinarySearch(DA, value, false);
+    return lastIndex - firstIndex + 1;
+}
 
-    FreeArray(&a1);
-    FreeArray(&a2);
+int Randomize(int start, int end)
+{
+    if (end + 1 - start != 0)
+    {
+        srand(time(NULL));
+        int r = rand() % (end + 1 - start) + start;
+        return r;
+    }
+    else
+    {
+        printf("Randomize failed : set a valid range");
+        return -1;
+    }
+}
 
-    system("pause");
-    return 0;
+void InsertionSort(int *a, int start, int end)
+{
+    int value, next;
+    for (int i = start + 1; i < end + 1; i++)
+    {
+        value = a[i];
+        next = i;
+        while (next > 0 && a[next - 1] > value)
+        {
+            a[next] = a[next - 1];
+            next = next - 1;
+        }
+        a[next] = value;
+    }
+}
+
+void Swap(int *a, int *b)
+{
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+void Shuffle(int *array, size_t n)
+{
+    if (n > 1)
+    {
+        srand(time(NULL));
+        for (size_t i = 0; i < n - 1; i++)
+        {
+            size_t j = rand() % (i + 1);
+            Swap(&array[j], &array[i]);
+        }
+    }
+}
+
+int Partition(int *A, int start, int end)
+{
+    // random pivot : worst case is unlikely
+    int PivotIndex = Randomize(start, end);
+    Swap(&A[PivotIndex], &A[end]);
+
+    int pivot = A[end];
+    int partitionIndex = start;
+    for (int i = start; i < end; i++)
+    {
+        if (A[i] <= pivot)
+        {
+            Swap(&A[i], &A[partitionIndex]);
+            partitionIndex++;
+        }
+    }
+    Swap(&A[partitionIndex], &A[end]);
+    return partitionIndex;
+}
+
+void QuickSort(DynamicArray *DA, int start, int end)
+{
+    Shuffle(DA->A, DA->end);
+    if (start < end - 1)
+    {
+        if (end - 1 <= start + 100) // insertion sort for small partitions
+        {
+            InsertionSort(DA->A, start, end - 1);
+            return;
+        }
+        int partitionIndex = Partition(DA->A, start, end - 1);
+        QuickSort(DA, start, partitionIndex - 1);
+        QuickSort(DA, partitionIndex + 1, end - 1);
+    }
+}
+
+void ArrayPopulator(DynamicArray *DA, int start, int end, char choice)
+{
+    srand(time(NULL)); // seed is the current calendar time (seconds since Jan 1, 1970).
+    for (int i = 0; i < DA->MAX; i++)
+    {
+        if (choice == 'r')
+        {
+            DA->A[i] = rand() % (end + 1 - start) + start;
+            DA->end++;
+        }
+        else if (choice == 's')
+        {
+            DA->A[i] = i;
+            DA->end++;
+        }
+        else if (choice == 'b')
+        {
+            DA->A[i] = DA->MAX - i;
+            DA->end++;
+        }
+    }
 }

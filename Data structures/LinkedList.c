@@ -96,17 +96,14 @@ void ReverseRec(Node **ptrhead)
     Node *current = *ptrhead;
     *ptrhead = (*ptrhead)->next;
     ReverseRec(ptrhead);
-    // current->next->next = current;
-    Node *temp = current->next;
-    temp->next = current;
+    current->next->next = current;
     current->next = NULL;
-    // current->next = NULL;
 }
 
 int main()
 {
     Node *head = NULL; // create empty list
-    for (int i = 1; i < 10; i++)
+    for (int i = 1; i < 1000; i++)
     {
         Insert(&head, i, i);
     }
