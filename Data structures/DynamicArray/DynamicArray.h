@@ -10,22 +10,28 @@ typedef struct DynamicArray
     int *A;
 } DynamicArray;
 
+void LogColor(char *text, char c);
+void Swap(int *a, int *b);
 void InitArray(DynamicArray *DA, int initialSize);
 void PrintArray(DynamicArray *DA, int start, int final);
 void InsertArray(DynamicArray *DA, int value, int index);
 void RemoveArray(DynamicArray *DA, int index);
+void RemoveArrayValue(DynamicArray *DA, int value);
+void RemoveArrayRange(DynamicArray *DA, int start, int end);
 int GetArray(DynamicArray *DA, int index);
 int GetSize(DynamicArray *DA);
 void ChangeArray(DynamicArray *DA, int value, int index);
 void FreeArray(DynamicArray *DA);
 void ClearArray(DynamicArray *DA, int newSize);
 void CopyArray(DynamicArray *DA1, DynamicArray *DA2, int start, int end);
+void ReverseArray(DynamicArray *DA);
 
 int BinarySearch(DynamicArray *DA, int value, bool first);
 int Count(int const *A, int n, int value);
 
+int MedianOfThree(int *A, int left, int right);
 int Randomize(int start, int end);
-void Swap(int *a, int *b);
+
 void Shuffle(int *array, size_t n);
 int Partition(int *A, int start, int end);
 void QuickSort(DynamicArray *DA, int start, int end);
