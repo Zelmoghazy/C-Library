@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <time.h>
+#include <stdarg.h>
 
 typedef struct DynamicArray
 {
@@ -9,6 +10,13 @@ typedef struct DynamicArray
     int MAX;
     int *A;
 } DynamicArray;
+
+void delay(int ms) // delay function
+{
+    clock_t timeDelay = ms + clock();
+    while (timeDelay > clock())
+        ;
+}
 
 void LogColor(char *text, char c)
 {
@@ -64,63 +72,101 @@ void InitArray(DynamicArray *DA, int initialSize)
     if (DA->A == NULL)
     {
         LogColor("Allocation failed", 'r');
+        // delay(5000);
         exit(0);
     }
 }
 
 void PrintArray(DynamicArray *DA, int start, int final)
 {
+    if (final > DA->MAX)
+    {
+        LogColor("Print Array failed : Exceeded max size", 'r');
+        return;
+    }
     LogColor("-------------------------", 'p');
     for (int j = start; j < final; j++)
     {
         printf("%d ", DA->A[j]);
     }
     printf("\n");
+    if (DA->end == 0)
+    {
+        LogColor("Empty Array !", 'y');
+    }
     printf("\033[0;32m");
     printf("Last used Index: %d\n", DA->end);
-    printf("Array Max Index: %d\n", DA->MAX);
+    printf("Array Capacity: %d\n", DA->MAX);
     printf("\033[0m");
-
     LogColor("-------------------------", 'p');
+}
+
+void Expand(DynamicArray *DA)
+{
+    // When it exceeds the capacity of array
+    DA->MAX = DA->MAX * 2;
+    int *B = realloc(DA->A, (DA->MAX + 1) * sizeof(int));
+    if (B == NULL)
+    {
+        // check if reallocation succeeded
+        LogColor("Reallocation failed", 'r');
+        delay(5000);
+        exit(0);
+    }
+    for (int i = DA->MAX / 2; i < DA->MAX + 1; i++)
+    {
+        // realloc produce garbage values
+        // reinitialized by 0
+        B[i] = 0;
+    }
+
+    DA->A = B;
+}
+
+void Shrink(DynamicArray *DA)
+{
+    DA->MAX = DA->MAX / 2;
+    int *B = realloc(DA->A, DA->MAX * sizeof(int));
+    if (B == NULL)
+    {
+        // check if reallocation succeeded
+        LogColor("Reallocation failed", 'r');
+        exit(0);
+    }
+    DA->A = B;
+}
+
+void Append(DynamicArray *DA, int value)
+{
+    DA->A[DA->end] = value;
+    DA->end++;
+}
+
+void Pop(DynamicArray *DA)
+{
+    DA->end--;
+    DA->A[DA->end] = 0;
 }
 
 void InsertArray(DynamicArray *DA, int value, int index)
 {
     if (index >= 0)
     {
-        // Pass address of pointer to be able to alter it
         if (index >= DA->MAX || DA->end >= DA->MAX)
         {
-            // When it exceeds the capacity of array
-            DA->MAX = DA->MAX * 2;
-            int *B = realloc(DA->A, (DA->MAX + 1) * sizeof(int));
-
-            for (int i = DA->MAX / 2; i < DA->MAX + 1; i++)
-            {
-                // realloc produce garbage values
-                B[i] = 0;
-            }
-            if (B == NULL)
-            {
-                // check if reallocation succeeded
-                LogColor("Reallocation failed", 'r');
-                exit(0);
-            }
-
-            DA->A = B;
-
+            Expand(DA);
             InsertArray(DA, value, index);
         }
+
         // Append the array
         else if (index == DA->end)
         {
-            DA->A[DA->end] = value;
-            DA->end++;
+            Append(DA, value);
         }
         // Insert at any position
         else
         {
-            for (int j = DA->end + 1; j > index; j--)
+            for (int j = DA->end; j > index; j--)
             {
                 DA->A[j] = DA->A[j - 1];
             }
@@ -137,25 +183,16 @@ void InsertArray(DynamicArray *DA, int value, int index)
 
 void RemoveArray(DynamicArray *DA, int index)
 {
-    if (index <= DA->end && index >= 0)
+    if (index <= DA->end && index >= 0 && DA->end > 0)
     {
         if (DA->end < DA->MAX / 2)
         {
-            DA->MAX = DA->MAX / 2;
-            int *B = realloc(DA->A, DA->MAX * sizeof(int));
-            if (B == NULL)
-            {
-                // check if reallocation succeeded
-                LogColor("Reallocation failed", 'r');
-                exit(0);
-            }
-            DA->A = B;
+            Shrink(DA);
             RemoveArray(DA, index);
         }
         else if (index == DA->end)
         {
-            DA->end--;
-            DA->A[DA->end] = 0;
+            Pop(DA);
         }
         else
         {
@@ -335,7 +372,7 @@ int BinarySearch(DynamicArray *DA, int value, bool first)
     return result;
 }
 
-int Count(DynamicArray *DA, int n, int value)
+int Count(DynamicArray *DA, int value)
 {
     int firstIndex = BinarySearch(DA, value, true);
     int lastIndex = BinarySearch(DA, value, false);
@@ -477,8 +514,13 @@ void QuickSort(DynamicArray *DA, int start, int end)
     }
 }
 
-void ArrayPopulator(DynamicArray *DA, int start, int end, char choice)
+void ArrayPopulator(DynamicArray *DA, ...)
 {
+    va_list args;
+    va_start(args, DA);
+    unsigned char choice = (unsigned char)va_arg(args, int);
+    int start = va_arg(args, int);
+    int end = va_arg(args, int);
     srand(time(NULL)); // seed is the current calendar time (seconds since Jan 1, 1970).
     for (int i = 0; i < DA->MAX; i++)
     {
@@ -497,5 +539,24 @@ void ArrayPopulator(DynamicArray *DA, int start, int end, char choice)
             DA->A[i] = DA->MAX - i;
             DA->end++;
         }
+        else if (choice == 'c')
+        {
+            DA->A[i] = start;
+            DA->end++;
+        }
+        else if (choice == 'v')
+        {
+            if (i % 2 == 0)
+                DA->A[i] = start;
+            else
+                DA->A[i] = end;
+            DA->end++;
+        }
+        else
+        {
+            choice = 's';
+            i--;
+        }
     }
+    va_end(args);
 }
