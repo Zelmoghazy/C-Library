@@ -1,23 +1,30 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <stdint.h>
-uint64_t factorial(uint64_t n)
-{
+#include <stdlib.h>
 
-    if (n == 0 || n == 1)
+uint64_t factorialTR(int n, int a)
+{
+    if (n <= 1)
     {
-        return 1;
+        return a;
     }
     else
     {
-        n = n * factorial(n - 1);
+        return (factorialTR((n - 1), (a * n)));
     }
-    return n;
+}
+uint64_t factorial(uint64_t n)
+{
+    if (n <= 1)
+    {
+        return 1;
+    }
+    return factorialTR(n, 1);
 }
 
 int main(void)
 {
-    printf("%llu\n", factorial(19));
+    printf("%llu\n", factorial(5));
     system("pause");
     return 0;
 }
