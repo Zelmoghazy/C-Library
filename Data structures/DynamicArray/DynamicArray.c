@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <time.h>
 #include <stdarg.h>
+#include <stdint.h>
 
 typedef struct DynamicArray
 {
@@ -10,6 +11,9 @@ typedef struct DynamicArray
     int MAX;
     int *A;
 } DynamicArray;
+
+void InsertArray(DynamicArray *DA, int value, int index);
+void RemoveArray(DynamicArray *DA, int index);
 
 void delay(int ms) // delay function
 {
@@ -64,16 +68,64 @@ void Swap(int *a, int *b)
     *b = temp;
 }
 
-void InitArray(DynamicArray *DA, int initialSize)
+int Randomize(int start, int end)
 {
+    if (end + 1 - start != 0)
+    {
+        srand(time(NULL));
+        int r = rand() % (end + 1 - start) + start;
+        return r;
+    }
+    else
+    {
+        LogColor("Randomize failed : set a valid range", 'r');
+        return -1;
+    }
+}
+
+void Shuffle(int *A, int n)
+{
+    if (n > 1)
+    {
+        srand(time(NULL));
+        for (int i = 0; i < n - 1; i++)
+        {
+            int j = rand() % (i + 1);
+            Swap(&A[j], &A[i]);
+        }
+    }
+}
+
+DynamicArray *newArray(int initialSize)
+{
+    DynamicArray *DA = (DynamicArray *)malloc(sizeof(DynamicArray));
     DA->MAX = initialSize;
     DA->end = 0;
     DA->A = calloc(DA->MAX, sizeof(int));
     if (DA->A == NULL)
     {
         LogColor("Allocation failed", 'r');
-        // delay(5000);
+        delay(5000);
         exit(0);
+    }
+    return DA;
+}
+
+void FreeArray(DynamicArray *DA)
+{
+    free(DA->A);
+    DA->A = NULL;
+}
+
+bool isEmpty(DynamicArray *DA)
+{
+    if (DA->end == 0)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
     }
 }
 
@@ -90,14 +142,14 @@ void PrintArray(DynamicArray *DA, int start, int final)
         printf("%d ", DA->A[j]);
     }
     printf("\n");
-    if (DA->end == 0)
+    if (isEmpty(DA))
     {
         LogColor("Empty Array !", 'y');
     }
-    printf("\033[0;32m");
+    printf("\033[0;32m"); // green color
     printf("Last used Index: %d\n", DA->end);
     printf("Array Capacity: %d\n", DA->MAX);
-    printf("\033[0m");
+    printf("\033[0m"); /// reset white color
     LogColor("-------------------------", 'p');
 }
 
@@ -105,7 +157,7 @@ void Expand(DynamicArray *DA)
 {
     // When it exceeds the capacity of array
     DA->MAX = DA->MAX * 2;
-    int *B = realloc(DA->A, (DA->MAX + 1) * sizeof(int));
+    int *B = realloc(DA->A, DA->MAX * sizeof(int));
     if (B == NULL)
     {
         // check if reallocation succeeded
@@ -113,7 +165,7 @@ void Expand(DynamicArray *DA)
         delay(5000);
         exit(0);
     }
-    for (int i = DA->MAX / 2; i < DA->MAX + 1; i++)
+    for (int i = DA->MAX / 2; i < DA->MAX; i++)
     {
         // realloc produce garbage values
         // reinitialized by 0
@@ -131,6 +183,7 @@ void Shrink(DynamicArray *DA)
     {
         // check if reallocation succeeded
         LogColor("Reallocation failed", 'r');
+        delay(5000);
         exit(0);
     }
     DA->A = B;
@@ -138,14 +191,28 @@ void Shrink(DynamicArray *DA)
 
 void Append(DynamicArray *DA, int value)
 {
-    DA->A[DA->end] = value;
-    DA->end++;
+    if (DA->end < DA->MAX)
+    {
+        DA->A[DA->end] = value;
+        DA->end++;
+    }
+    else
+    {
+        InsertArray(DA, value, DA->end);
+    }
 }
 
 void Pop(DynamicArray *DA)
 {
-    DA->end--;
-    DA->A[DA->end] = 0;
+    if (DA->end < DA->MAX / 4)
+    {
+        RemoveArray(DA, DA->end);
+    }
+    else
+    {
+        DA->end--;
+        DA->A[DA->end] = 0;
+    }
 }
 
 void InsertArray(DynamicArray *DA, int value, int index)
@@ -185,7 +252,7 @@ void RemoveArray(DynamicArray *DA, int index)
 {
     if (index <= DA->end && index >= 0 && DA->end > 0)
     {
-        if (DA->end < DA->MAX / 2)
+        if (DA->end < DA->MAX / 4) // shrink to half when it falls below quarter of max size
         {
             Shrink(DA);
             RemoveArray(DA, index);
@@ -196,12 +263,12 @@ void RemoveArray(DynamicArray *DA, int index)
         }
         else
         {
-            for (int j = index; j < DA->end + 1; j++)
+            for (int j = index; j < DA->end - 1; j++)
             {
                 DA->A[j] = DA->A[j + 1];
             }
-            DA->A[DA->end] = 0;
             DA->end--;
+            DA->A[DA->end] = 0;
         }
     }
     else
@@ -248,9 +315,9 @@ void RemoveArrayRange(DynamicArray *DA, int start, int end)
 
 int GetArray(DynamicArray *DA, int index)
 {
-    if (index > DA->end)
+    if (index > DA->end || index < 0)
     {
-        printf("GetArray failed: Cannot access uninitialized data \n");
+        LogColor("GetArray failed: Cannot access uninitialized data", 'r');
         return 0;
     }
     return DA->A[index];
@@ -265,36 +332,23 @@ void ChangeArray(DynamicArray *DA, int value, int index)
 {
     if (index > DA->end || index < 0)
     {
+        printf("\033[1;31m");
         printf("Change Array failed: Cannot change not yet initialized data, Max index = %d \n", DA->end);
+        printf("\033[0m");
         return;
     }
     DA->A[index] = value;
 }
 
-void FreeArray(DynamicArray *DA)
-{
-    free(DA->A);
-    DA->A = NULL;
-}
-
 void ClearArray(DynamicArray *DA, int newSize)
 {
-
     if (DA->MAX > newSize)
     {
         DA->end = newSize;
 
         while (DA->MAX >= newSize * 2)
         {
-            DA->MAX = DA->MAX / 2;
-            int *B = realloc(DA->A, DA->MAX * sizeof(int));
-            if (B == NULL)
-            {
-                // check if reallocation succeeded
-                printf("Reallocation failed");
-                exit(0);
-            }
-            DA->A = B;
+            Shrink(DA);
         }
         for (int i = 0; i < DA->MAX; i++)
         {
@@ -325,7 +379,7 @@ void CopyArray(DynamicArray *DA1, DynamicArray *DA2, int start, int end)
     }
     else
     {
-        printf("CopyArray failed: Cannot copy uninitialized data \n");
+        LogColor("CopyArray failed: Cannot copy uninitialized data", 'r');
     }
 }
 
@@ -379,21 +433,6 @@ int Count(DynamicArray *DA, int value)
     return lastIndex - firstIndex + 1;
 }
 
-int Randomize(int start, int end)
-{
-    if (end + 1 - start != 0)
-    {
-        srand(time(NULL));
-        int r = rand() % (end + 1 - start) + start;
-        return r;
-    }
-    else
-    {
-        printf("Randomize failed : set a valid range");
-        return -1;
-    }
-}
-
 void InsertionSort(int *a, int start, int end)
 {
     for (int i = start + 1; i < end + 1; i++)
@@ -406,19 +445,6 @@ void InsertionSort(int *a, int start, int end)
             next = next - 1;
         }
         a[next] = value;
-    }
-}
-
-void Shuffle(int *array, size_t n)
-{
-    if (n > 1)
-    {
-        srand(time(NULL));
-        for (size_t i = 0; i < n - 1; i++)
-        {
-            size_t j = rand() % (i + 1);
-            Swap(&array[j], &array[i]);
-        }
     }
 }
 
@@ -503,7 +529,7 @@ void QuickSort(DynamicArray *DA, int start, int end)
                 return;
             }
         }
-        if (end <= start + 100) // insertion sort for small partitions
+        if (end <= start + 30) // insertion sort for small partitions
         {
             InsertionSort(DA->A, start, end);
             return;
@@ -536,7 +562,7 @@ void ArrayPopulator(DynamicArray *DA, ...)
         }
         else if (choice == 'b')
         {
-            DA->A[i] = DA->MAX - i;
+            DA->A[i] = DA->MAX - i - 1;
             DA->end++;
         }
         else if (choice == 'c')
@@ -552,6 +578,18 @@ void ArrayPopulator(DynamicArray *DA, ...)
                 DA->A[i] = end;
             DA->end++;
         }
+        else if (choice == 'f')
+        {
+            if (i <= 1)
+            {
+                DA->A[i] = i;
+            }
+            else
+            {
+                DA->A[i] = (int)DA->A[i - 1] + (int)DA->A[i - 2];
+            }
+            DA->end++;
+        }
         else
         {
             choice = 's';
@@ -559,4 +597,53 @@ void ArrayPopulator(DynamicArray *DA, ...)
         }
     }
     va_end(args);
+}
+
+int Power(int x, int n)
+{
+    if (n == 0)
+    {
+        return 1;
+    }
+    if (n % 2 == 0)
+    {
+        return Power(x * x, n / 2);
+    }
+    else
+    {
+        return Power(x * x, n / 2) * x;
+    }
+}
+
+void Exponentiate(DynamicArray *DA, int pow)
+{
+    for (int i = 0; i < DA->end; i++)
+    {
+        DA->A[i] = Power((int)DA->A[i], pow);
+    }
+}
+
+int Maximum(DynamicArray *DA)
+{
+    int MAX = -INT_MAX;
+    for (int i = 0; i < DA->end; i++)
+    {
+        if (DA->A[i] > MAX)
+        {
+            MAX = DA->A[i];
+        }
+    }
+    return MAX;
+}
+int Minimum(DynamicArray *DA)
+{
+    int MIN = INT_MAX;
+    for (int i = 0; i < DA->end; i++)
+    {
+        if (DA->A[i] < MIN)
+        {
+            MIN = DA->A[i];
+        }
+    }
+    return MIN;
 }
