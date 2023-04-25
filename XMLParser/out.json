@@ -1,0 +1,155 @@
+{
+    "users" :{
+        "user":[        
+            {
+            "id": "1",
+            "name": "Ahmed Ali",
+            "posts" :{
+                "post": 
+                    {
+                    "body": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+                    "topics" :{
+                        "topic":[
+                        "economy",
+                        "finance"
+                         ]
+                    }
+                }
+            },
+            "followers" :{
+                "follower":[                
+                    {
+                    "id": "2"
+                },
+                
+                    {
+                    "id": "3"
+                }
+              ]
+            }
+        },
+        
+            {
+            "id": "2",
+            "name": "Yasser Ahmed",
+            "posts": "(null)",
+            "followers" :{
+                "follower":[                
+                    {
+                    "id": "3"
+                },
+                
+                    {
+                    "id": "4"
+                },
+                
+                    {
+                    "id": "5"
+                }
+              ]
+            }
+        },
+        
+            {
+            "id": "3",
+            "name": "Mohamed Ali",
+            "posts" :{
+                "post": 
+                    {
+                    "body": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+                    "topics" :{
+                        "topic": "sports"
+                    }
+                }
+            },
+            "followers" :{
+                "follower" :{
+                    "id": "1"
+                }
+            }
+        },
+        
+            {
+            "id": "4",
+            "name": "Mohamed Hassan",
+            "posts" :{
+                "post": 
+                    {
+                    "body": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+                    "topics" :{
+                        "topic": "football"
+                    }
+                }
+            },
+            "followers" :{
+                "follower":[                
+                    {
+                    "id": "1"
+                },
+                
+                    {
+                    "id": "5"
+                }
+              ]
+            }
+        },
+        
+            {
+            "id": "5",
+            "name": "Hassan Osama",
+            "posts": "(null)",
+            "followers" :{
+                "follower":[                
+                    {
+                    "id": "1"
+                },
+                
+                    {
+                    "id": "4"
+                }
+              ]
+            }
+        },
+        
+            {
+            "id": "6",
+            "name": "Hassan Ahmed",
+            "posts": "(null)",
+            "followers" :{
+                "follower":[                
+                    {
+                    "id": "1"
+                },
+                
+                    {
+                    "id": "2"
+                },
+                
+                    {
+                    "id": "3"
+                },
+                
+                    {
+                    "id": "4"
+                },
+                
+                    {
+                    "id": "5"
+                }
+              ]
+            }
+        },
+        
+            {
+            "id": "7",
+            "name": "Hassan Salah",
+            "posts": "(null)",
+            "followers" :{
+                "follower" :{
+                    "id": "6"
+                }
+            }
+        }
+      ]
+    }
+}
