@@ -19,16 +19,16 @@ OBJ=$(addprefix $(BUILD_DIR)/,$(notdir $(SRC:.c=.o)))
 DEP=$(addprefix $(BUILD_DIR)/,$(notdir $(SRC:.c=.d)))
 
 
-PROJ=Main
+EXEC=Main.exe
 
-all: $(BUILD_DIR)/$(PROJ).exe
+all: $(BUILD_DIR)/$(EXEC)
 	@echo "========================================="
 	@echo "              BUILD SUCCESS              "
 	@echo "========================================="
 
 $(BUILD_DIR)/%.o: %.c | $(BUILD_DIR)
 	$(CC) -c $(CFLAGS) $< -o $@ 
-$(BUILD_DIR)/$(PROJ).exe: $(OBJ)
+$(BUILD_DIR)/$(EXEC): $(OBJ)
 	$(CC) $(CFLAGS) $^ -o $@ 
 
 $(BUILD_DIR):
